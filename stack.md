@@ -1,8 +1,10 @@
-# Tech stac notes
+# Tech stack notes
 
 ## Protobuf
-- https://github.com/protocolbuffers/protoscope
+- Can read proto in more human like way
+  https://github.com/protocolbuffers/protoscope
 
 ## Go
-- https://github.com/google/pprof
+- Profiler
+  https://github.com/google/pprof
 
