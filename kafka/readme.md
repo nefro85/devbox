@@ -1,6 +1,6 @@
 # Kafka Setup Notes
 
-'''bash
+```bash
 
 #!/bin/bash
 
@@ -36,4 +36,4 @@ start_kraft_kafka() {
 start_kraft_kafka
 
 
-'''
+```
