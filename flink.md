@@ -20,7 +20,7 @@ tar -xf ./flink.gz -C ${DEST} --strip-components=1; \
 rm ./flink.gz
 ```
 
-## Local configration
+## Local configuration
 
 ```yaml
 state.backend: rocksdb
