@@ -14,16 +14,16 @@ import io.vertx.ext.web.sstore.LocalSessionStore;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class AuthServer extends AbstractVerticle implements AuthnHelper {
+public class AuthServer extends AbstractVerticle {
 
 
     Router initRouter() {
         final Router router = Router.router(vertx);
-        router.route().handler(StaticHandler.create("static").setCachingEnabled(false));
+        router.route().handler(StaticHandler.create(Configuration.WEB_ROOT.get()).setCachingEnabled(false));
         router.post().handler(BodyHandler.create());
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
-        initAuthun(vertx, new MongoRepository(), router);
+        AuthnHelper.initAuthun(vertx, new MongoRepository(), router);
 
         TokenHandler.attachRoute(router);
 

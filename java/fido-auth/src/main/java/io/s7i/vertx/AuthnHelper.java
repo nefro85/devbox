@@ -5,10 +5,14 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.auth.webauthn.*;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.WebAuthnHandler;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
-public interface AuthnHelper {
+@UtilityClass
+@Slf4j
+public class AuthnHelper {
 
-    default void initAuthun(Vertx vertx, AuthenticatorRepository repo, Router router) {
+    public static void initAuthun(Vertx vertx, AuthenticatorRepository repo, Router router) {
         var authenticatorAttachment = AuthenticatorAttachment.of(Configuration.AUTH_ATTACHMENT.get());
         var options = new WebAuthnOptions()
                 .setRelyingParty(new RelyingParty()
@@ -24,6 +28,8 @@ public interface AuthnHelper {
                 .addTransport(AuthenticatorTransport.NFC)
                 .addTransport(AuthenticatorTransport.BLE)
                 .addTransport(AuthenticatorTransport.INTERNAL);
+
+        log.info("WebAuthnOptions: {}", options);
 
         var webAuthN = WebAuthn.create(vertx, options)
                 .authenticatorFetcher(repo::fetcher)

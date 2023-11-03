@@ -3,7 +3,7 @@ FROM eclipse-temurin:11
 
 WORKDIR /opt/fido2
 
-COPY misc/hello.html static/index.html
+COPY misc/hello.html web/index.html
 COPY certstore.jks certstore.jks
 COPY target/fido-auth-1.0.0-SNAPSHOT.jar fido.jar
 
@@ -15,7 +15,8 @@ ENV APP_NAME="Web Auth Service" \
     SHOW_ACTIVITY="true" \
     ORIGIN="https://localhost:8443" \
     MONGODB_URI="mongodb://root:example@mongo:27017/" \
-    JVM_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+    JVM_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" \
+    WEB_ROOT="web"
 
 CMD ["sh", "-c", "java ${JVM_OPTS} -jar fido.jar"]
 
