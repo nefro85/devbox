@@ -1,13 +1,17 @@
 package io.s7i.vertx;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public enum Configuration {
 
     APP_NAME, ORIGIN, SHOW_ACTIVITY, USE_SSL, CERT_PATH, CERTSTORE_SECRET, MONGODB_URI, AUTH_ATTACHMENT,
     WEB_ROOT,
+    APP_FLAGS,
     WEBAUTHN_CALLBACK, WEBAUTHN_REGISTER, WEBAUTHN_LOGIN;
 
     public String get() {
@@ -34,5 +38,15 @@ public enum Configuration {
             default:
                 return null;
         }
+    }
+
+    public List<String> list() {
+        return Arrays.stream(this.get().split(","))
+                .filter(String::isEmpty)
+                .collect(Collectors.toList());
+    }
+
+    public static boolean devMode() {
+        return APP_FLAGS.list().contains("dev");
     }
 }

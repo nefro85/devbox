@@ -41,8 +41,11 @@ public class AuthnHelper {
 
 
         var webAuthnHandler = WebAuthnHandler.create(webAuthN)
-                .setOrigin(Configuration.ORIGIN.get())
                 .setupCallback(router.post(Configuration.WEBAUTHN_CALLBACK.get()));
+
+        if (!Configuration.devMode()) {
+            webAuthnHandler.setOrigin(Configuration.ORIGIN.get());
+        }
 
         webAuthnHandler.setupCredentialsCreateCallback(router.post(Configuration.WEBAUTHN_REGISTER.get()));
         webAuthnHandler.setupCredentialsGetCallback(router.post(Configuration.WEBAUTHN_LOGIN.get()));

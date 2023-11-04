@@ -8,6 +8,7 @@ COPY certstore.jks certstore.jks
 COPY target/fido-auth-1.0.0-SNAPSHOT.jar fido.jar
 
 ENV APP_NAME="Web Auth Service" \
+    APP_FLAGS="dev" \
     AUTH_ATTACHMENT="CROSS_PLATFORM" \
     CERTSTORE_SECRET="ch@nge1t" \
     CERT_PATH="certstore.jks" \
