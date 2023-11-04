@@ -1,6 +1,5 @@
 package io.s7i.token;
 
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.json.JsonObject;
@@ -9,20 +8,20 @@ import io.vertx.ext.web.RoutingContext;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class TokenHandler implements Handler<RoutingContext> {
+public class TokenHandler {
     public static Router attachRoute(Router router) {
-        router.route("/token").handler(new TokenHandler());
+        var hnd = new TokenHandler();
+        router.get("/token").handler(hnd::getToken);
         return router;
     }
 
-    @Override
-    public void handle(RoutingContext ctx) {
+    public void getToken(RoutingContext ctx) {
         var r = ctx.response();
         r.headers().set(HttpHeaders.CONTENT_TYPE, MimeMapping.getMimeTypeForExtension("json"));
-        r.end(getToken(ctx).toBuffer());
+        r.end(generate(ctx).toBuffer());
     }
 
-    private JsonObject getToken(RoutingContext context) {
+    private JsonObject generate(RoutingContext context) {
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.put("token", JwtToken.build());

@@ -12,6 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthnHelper {
 
+    public static final String WEBAUTHN_CALLBACK = "/webauthn/callback";
+    public static final String WEBAUTHN_REGISTER = "/webauthn/register";
+    public static final String WEBAUTHN_LOGIN = "/webauthn/login";
+
     public static void initAuthun(Vertx vertx, AuthenticatorRepository repo, Router router) {
         var authenticatorAttachment = AuthenticatorAttachment.of(Configuration.AUTH_ATTACHMENT.get());
         var options = new WebAuthnOptions()
@@ -38,10 +42,10 @@ public class AuthnHelper {
 
         var webAuthnHandler = WebAuthnHandler.create(webAuthN)
                 .setOrigin(Configuration.ORIGIN.get())
-                .setupCallback(router.post("/webauthn/callback"));
+                .setupCallback(router.post(Configuration.WEBAUTHN_CALLBACK.get()));
 
-        webAuthnHandler.setupCredentialsCreateCallback(router.post("/webauthn/register"));
-        webAuthnHandler.setupCredentialsGetCallback(router.post("/webauthn/login"));
+        webAuthnHandler.setupCredentialsCreateCallback(router.post(Configuration.WEBAUTHN_REGISTER.get()));
+        webAuthnHandler.setupCredentialsGetCallback(router.post(Configuration.WEBAUTHN_LOGIN.get()));
 
         router.route().handler(webAuthnHandler);
 

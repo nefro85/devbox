@@ -9,14 +9,12 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.ReturnDocument;
 import io.s7i.vertx.Configuration;
-import io.vertx.core.Future;
 import io.vertx.ext.auth.webauthn.Authenticator;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.types.ObjectId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,9 +24,8 @@ import java.util.stream.StreamSupport;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
-public class MongoRepository implements AuthenticatorRepository {
-
-    static final Logger log = LoggerFactory.getLogger(MongoRepository.class);
+@Slf4j
+public class MongoRepository {
     private final MongoClient client;
 
     @Data
@@ -97,8 +94,7 @@ public class MongoRepository implements AuthenticatorRepository {
         return client.getDatabase("webauthn").getCollection("fido", Auth.class);
     }
 
-    @Override
-    public Future<List<Authenticator>> fetcher(Authenticator query) {
+    public List<Authenticator> fetcher(Authenticator query) {
         log.info("fetch: {}", query);
 
         var split = collection()
@@ -106,15 +102,16 @@ public class MongoRepository implements AuthenticatorRepository {
                         Filters.eq("authenticator.userName", query.getUserName()),
                         Filters.eq("authenticator.credID", query.getCredID())))
                 .spliterator();
-        var list = StreamSupport.stream(split, false)
+        var authenticators = StreamSupport.stream(split, false)
                 .map(Auth::getAuthenticator)
                 .map(Details::toAuthenticator)
                 .collect(Collectors.toList());
-        return Future.succeededFuture(list);
+
+        log.info("authenticators: {}", authenticators);
+        return authenticators;
     }
 
-    @Override
-    public Future<Void> updater(Authenticator authenticator) {
+    public Void updater(Authenticator authenticator) {
 
         Auth auth = collection()
                 .find(Filters.eq("authenticator.credID", authenticator.getCredID()))
@@ -143,7 +140,6 @@ public class MongoRepository implements AuthenticatorRepository {
 
             log.info("authenticator added: {}, result: {}", authenticator, result);
         }
-
-        return Future.succeededFuture();
+        return null;
     }
 }
