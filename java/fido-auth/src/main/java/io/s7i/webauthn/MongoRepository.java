@@ -17,6 +17,7 @@ import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.types.ObjectId;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -26,6 +27,7 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @Slf4j
 public class MongoRepository {
+    public static final String DATABASE_NAME = "webauthn";
     private final MongoClient client;
 
     @Data
@@ -91,7 +93,7 @@ public class MongoRepository {
     }
 
     public MongoCollection<Auth> collection() {
-        return client.getDatabase("webauthn").getCollection("fido", Auth.class);
+        return client.getDatabase(DATABASE_NAME).getCollection("fido", Auth.class);
     }
 
     public List<Authenticator> fetcher(Authenticator query) {
@@ -141,5 +143,17 @@ public class MongoRepository {
             log.info("authenticator added: {}, result: {}", authenticator, result);
         }
         return null;
+    }
+
+    public List<String> getUserRoles(String user) {
+        log.info("asking for UserRoles of user: {}:", user);
+
+        var coll = client.getDatabase(DATABASE_NAME).getCollection("UserRoles");
+        var userRoles = coll.find(Filters.eq("userName", user)).first();
+        if (userRoles != null) {
+            var roleList = userRoles.getList("roles", String.class);
+            return Collections.unmodifiableList(roleList);
+        }
+        return List.of();
     }
 }

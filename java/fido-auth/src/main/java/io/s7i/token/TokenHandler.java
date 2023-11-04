@@ -1,30 +1,37 @@
 package io.s7i.token;
 
-import io.vertx.core.http.HttpHeaders;
+import io.s7i.vertx.AsyncOp;
+import io.vertx.core.Future;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+import java.util.Map;
+
+import static java.util.Objects.requireNonNull;
 
 @Slf4j
 public class TokenHandler {
-    public static Router attachRoute(Router router) {
-        var hnd = new TokenHandler();
-        router.get("/token").handler(hnd::getToken);
+
+    public static Router attachRoute(Router router, AsyncOp asyncOp) {
+
+        router.get("/token")
+                .produces(MimeMapping.getMimeTypeForExtension("json"))
+                .respond(ctx -> {
+                    var userName = requireNonNull(ctx.user().principal().getString("userName"));
+                    return asyncOp.roles(userName)
+                            .compose(roles -> Future.succeededFuture(generate(roles)));
+                });
         return router;
     }
 
-    public void getToken(RoutingContext ctx) {
-        var r = ctx.response();
-        r.headers().set(HttpHeaders.CONTENT_TYPE, MimeMapping.getMimeTypeForExtension("json"));
-        r.end(generate(ctx).toBuffer());
-    }
+    private static JsonObject generate(List<String> roles) {
 
-    private JsonObject generate(RoutingContext context) {
-
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.put("token", JwtToken.build());
+        var jsonObject = new JsonObject();
+        var claims = Map.of("roles", String.join(",", roles));
+        jsonObject.put("token", JwtToken.build(claims));
         return jsonObject;
     }
 

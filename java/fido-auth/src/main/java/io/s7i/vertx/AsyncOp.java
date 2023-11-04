@@ -31,4 +31,8 @@ public class AsyncOp implements AuthenticatorRepository {
     public Future<Void> updater(Authenticator authenticator) {
         return worker.executeBlocking(() -> repo.updater(authenticator), false);
     }
+
+    public Future<List<String>> roles(String userName) {
+        return worker.executeBlocking(() -> repo.getUserRoles(userName), false);
+    }
 }
