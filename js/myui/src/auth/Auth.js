@@ -3,6 +3,9 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import WebAuthn from './vertx-auth-webauthn'
 import { Container } from 'react-bootstrap';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+
 
 const webAuthn = new WebAuthn({
     callbackPath: '/webauthn/callback',
@@ -19,6 +22,7 @@ class AuthForm extends React.Component {
         this.handleRegister = this.handleRegister.bind(this);
         this.handleChangeEmail = this.handleChangeEmail.bind(this);
         this.handleChangeUserName = this.handleChangeUserName.bind(this)
+        this.handleLogin = this.handleLogin.bind(this);
     }
 
     handleRegister() {
@@ -26,7 +30,18 @@ class AuthForm extends React.Component {
             name: this.state.email,
             displayName: this.state.userName
         }).then(() => {
-            consol.log('registration successful');
+            console.log('registration successful');
+        }).catch(err => {
+            console.error(err);
+        });
+    }
+
+    handleLogin() {
+        webAuthn.login({
+            name: this.state.email
+        }).then(() => {
+            console.log('logged in');
+            this.props.onLogin();
         }).catch(err => {
             console.error(err);
         });
@@ -62,7 +77,14 @@ class AuthForm extends React.Component {
                             <Form.Control type="text" placeholder="Your Name" onChange={this.handleChangeUserName} value={this.state.userName} />
                         </Form.Group>
                     </Form>
-                    <Button onClick={this.handleRegister}>Register</Button>
+                    <Row>
+                        <Col>
+                            <Button onClick={this.handleRegister}>Register</Button>
+                        </Col>
+                        <Col>
+                            <Button onClick={this.handleLogin}>Login</Button>
+                        </Col>
+                    </Row>
                 </div>
             </Container>
 
