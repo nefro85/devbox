@@ -11,6 +11,10 @@ docker build -t s7i/fido .
 docker run -d -p 8443:8443 -p 5005:5005 --network dev-network --name fido --rm s7i/fido
 ```
 
+```bash
+docker run -d -p 8443:8443 -e ORIGIN=http://localhost:3000 -e APP_FLAGS= -p 5005:5005 --network dev-network --name fido --rm s7i/fido
+```
+
 ## Links
  - https://w3c.github.io/webauthn/
  - https://github.com/eclipse-vertx/vertx-auth/blob/master/vertx-auth-webauthn/src/main/js/vertx-auth-webauthn.js
