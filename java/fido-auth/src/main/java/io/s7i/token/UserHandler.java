@@ -24,7 +24,7 @@ public class UserHandler {
                                 .map(User::principal)
                                 .map(p -> p.getString("userName"))
                                 .map(usrName -> asyncOp.roles(usrName)
-                                        .compose(roles -> Future.succeededFuture(generate(roles)))
+                                        .compose(roles -> Future.succeededFuture(generate(usrName, roles)))
                                 ).orElse(Future.succeededFuture(new JsonObject()))
                 );
         router.get("/user/status")
@@ -38,17 +38,23 @@ public class UserHandler {
 
                 });
 
-        router.route("/user/logout").handler(ctx -> {
-            ctx.session().destroy();
-            ctx.response().end("LOGGED OUT!");
-        });
+        router.route("/user/logout")
+                .produces(MimeMapping.getMimeTypeForExtension("json"))
+                .respond(ctx -> {
+                    ctx.session().destroy();
+                    return Future.succeededFuture(new JsonObject().put("ok", true));
+                });
+
         return router;
     }
 
-    private static JsonObject generate(List<String> roles) {
+    private static JsonObject generate(String usrName, List<String> roles) {
 
         var jsonObject = new JsonObject();
-        var claims = Map.of("roles", String.join(",", roles));
+        var claims = Map.of(
+                "userName", usrName,
+                "roles", String.join(",", roles)
+        );
         jsonObject.put("token", JwtToken.build(claims));
         return jsonObject;
     }
