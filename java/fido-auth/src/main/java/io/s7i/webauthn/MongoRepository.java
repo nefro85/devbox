@@ -10,11 +10,9 @@ import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.ReturnDocument;
 import io.s7i.vertx.Configuration;
 import io.vertx.ext.auth.webauthn.Authenticator;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.bson.codecs.pojo.PojoCodecProvider;
-import org.bson.types.ObjectId;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -26,56 +24,9 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 @Slf4j
-public class MongoRepository {
+public class MongoRepository implements Repository {
     public static final String DATABASE_NAME = "webauthn";
     private final MongoClient client;
-
-    @Data
-    public static class Details {
-
-        static Details from(Authenticator authenticator) {
-            var details = new Details();
-            details.counter = authenticator.getCounter();
-            details.credID = authenticator.getCredID();
-            details.flags = authenticator.getFlags();
-            details.fmt = authenticator.getFmt();
-            details.publicKey = authenticator.getPublicKey();
-            details.type = authenticator.getType();
-            details.userName = authenticator.getUserName();
-            return details;
-        }
-
-        Long counter;
-        String credID;
-        Integer flags;
-        String fmt;
-        String publicKey;
-        String type;
-        String userName;
-
-        public Authenticator toAuthenticator() {
-            var a = new Authenticator();
-
-            a.setCounter(counter);
-            a.setCredID(credID);
-            a.setFlags(flags);
-            a.setFmt(fmt);
-            a.setPublicKey(publicKey);
-            a.setType(type);
-            a.setUserName(userName);
-
-            return a;
-        }
-    }
-
-    @Data
-    public static class Auth {
-        ObjectId id;
-        Details authenticator;
-
-        String created;
-        String update;
-    }
 
     public MongoRepository() {
         String mongoUri = Configuration.MONGODB_URI.get();

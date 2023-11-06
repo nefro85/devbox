@@ -16,6 +16,8 @@ ENV APP_NAME="Web Auth Service" \
     SHOW_ACTIVITY="true" \
     ORIGIN="https://localhost:8443" \
     MONGODB_URI="mongodb://root:example@mongo:27017/" \
+    REPO_TYPE="rocksdb" \
+    ROCKSDB_PATH="./authu-rocksdb" \
     JVM_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" \
     WEB_ROOT="web"
 

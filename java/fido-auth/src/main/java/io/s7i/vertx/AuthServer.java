@@ -2,6 +2,8 @@ package io.s7i.vertx;
 
 import io.s7i.token.UserHandler;
 import io.s7i.webauthn.MongoRepository;
+import io.s7i.webauthn.Repository;
+import io.s7i.webauthn.RocksdbRepository;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
 import io.vertx.core.Promise;
@@ -15,6 +17,9 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Map;
+import java.util.function.Supplier;
+
 @Slf4j
 public class AuthServer extends AbstractVerticle {
     AsyncOp repo;
@@ -23,7 +28,12 @@ public class AuthServer extends AbstractVerticle {
     public void init(Vertx vertx, Context context) {
         super.init(vertx, context);
 
-        repo = new AsyncOp(vertx, new MongoRepository());
+        var repoFactory = Map.<String, Supplier<Repository>>of(
+                "mongodb", MongoRepository::new,
+                "rocksdb", RocksdbRepository::new
+        ).get(Configuration.REPO_TYPE.get());
+
+        repo = new AsyncOp(vertx, repoFactory.get());
     }
 
     Router initRouter() {
