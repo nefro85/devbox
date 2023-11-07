@@ -1,19 +1,10 @@
-# Kubernetes
+# SSL
 
-### Minikube
+
+### OpenSSL
+
 ```bash
-minikube start --cpus=4 --memory=8g
-```
-
-Tools:
- - [kubectl](https://kubernetes.io/docs/tasks/tools/)
- - [helm](https://helm.sh/)
- - [minikube](https://minikube.sigs.k8s.io/docs/start/)
- - [lens](https://k8slens.dev/)
-
-### SSL
-```bash
-export PSWD="my-password"
+PSWD="my-password"
 
 openssl genrsa -aes256 -passout pass:${PSWD} -out server.pass.key 4096
 
@@ -32,3 +23,11 @@ openssl x509 -req -sha256 -days 365 -in server.csr -signkey server.key -out serv
 
 refs:
  - https://gist.github.com/mtigas/952344
+
+### JKS
+
+(JKS manager)[https://github.com/sfkulyk/jks-manager/]
+
+```bash
+curl -OL https://raw.githubusercontent.com/sfkulyk/jks-manager/master/jks_mgr.sh
+```
