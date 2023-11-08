@@ -63,7 +63,7 @@ export default function User() {
                 {tokenList.map(e => 
                     <Row>
                         <Col>
-                            <Token title={"JWToken #"+e.id} tokenVal={e.token} />
+                            <Token key={e.id} title={"JWToken #"+e.id} tokenVal={e.token} />
                         </Col>
                     </Row>                
                 )}

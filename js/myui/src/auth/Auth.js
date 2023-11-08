@@ -5,7 +5,7 @@ import WebAuthn from './vertx-auth-webauthn'
 import { Container } from 'react-bootstrap';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
 
 const webAuthn = new WebAuthn({
     callbackPath: '/webauthn/callback',
@@ -30,7 +30,7 @@ class AuthForm extends React.Component {
             name: this.state.email,
             displayName: this.state.userName
         }).then(() => {
-            console.log('registration successful');
+            this.props.onLogin();
         }).catch(err => {
             console.error(err);
         });
@@ -64,30 +64,26 @@ class AuthForm extends React.Component {
 
     render() {
         return (
-
-            <Container>
-                <div className='form-signin w-100 m-auto'>
-                    <Form>
-                        <Form.Group className="mb-3" controlId="formGroupEmail">
-                            <Form.Label>Email address</Form.Label>
-                            <Form.Control type="email" placeholder="Enter email" onChange={this.handleChangeEmail} value={this.state.email} />
-                        </Form.Group>
-                        <Form.Group className="mb-3" controlId="formGroupName">
-                            <Form.Label>Name</Form.Label>
-                            <Form.Control type="text" placeholder="Your Name" onChange={this.handleChangeUserName} value={this.state.userName} />
-                        </Form.Group>
-                    </Form>
-                    <Row>
-                        <Col>
-                            <Button onClick={this.handleRegister}>Register</Button>
-                        </Col>
-                        <Col>
-                            <Button onClick={this.handleLogin}>Login</Button>
-                        </Col>
-                    </Row>
-                </div>
-            </Container>
-
+            <div className='form-signin w-100 m-auto'>
+                <Form>
+                    <FloatingLabel label="Email address" className='mb-3'>
+                        <Form.Control type="email" placeholder="Enter email"
+                            onChange={this.handleChangeEmail} value={this.state.email} />
+                    </FloatingLabel>
+                    <FloatingLabel label="Display Name" className='mb-3'>
+                        <Form.Control type="text" placeholder="Your Name"
+                            onChange={this.handleChangeUserName} value={this.state.userName} />
+                    </FloatingLabel>
+                </Form>
+                <Row>
+                    <Col>
+                        <Button onClick={this.handleRegister}>Register</Button>
+                    </Col>
+                    <Col>
+                        <Button onClick={this.handleLogin}>Login</Button>
+                    </Col>
+                </Row>
+            </div>
         );
     }
 }
