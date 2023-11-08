@@ -27,6 +27,27 @@ function initCert() {
     -deststoretype pkcs12
 }
 
+function showCert() {
+    keytool \
+      -list \
+      -rfc \
+      -alias rsakey \
+      -storepass ${CERTSTORE_SECRET} \
+      -keystore certstore.jks \
+      -storetype pkcs12
+
+    keytool \
+      -export \
+      -alias rsakey \
+      -storepass ${CERTSTORE_SECRET} \
+      -keystore certstore.jks \
+      -storetype pkcs12 | openssl x509 -inform der -pubkey -noout
+}
+
+function check_jwt() {
+  jwt -key key.pub -alg RS256 -verify token.jwt
+}
+
 function run() {
   #mvn exec:java
   java -jar target/fido-auth-1.0.0-SNAPSHOT.jar
@@ -42,6 +63,12 @@ function main () {
             ;;
         init)
             initCert
+            ;;
+        cert)
+            showCert
+            ;;
+        jwt)
+            check_jwt
             ;;
         *)
         badOpt $@
