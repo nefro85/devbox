@@ -12,9 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthnHelper {
 
-    public static final String WEBAUTHN_CALLBACK = "/webauthn/callback";
-    public static final String WEBAUTHN_REGISTER = "/webauthn/register";
-    public static final String WEBAUTHN_LOGIN = "/webauthn/login";
+
+    public static final String ROOT = Configuration.CONTEXT_ROOT.get();
+    public static final String WEBAUTHN_CALLBACK = ROOT + "webauthn/callback";
+    public static final String WEBAUTHN_REGISTER = ROOT + "webauthn/register";
+    public static final String WEBAUTHN_LOGIN = ROOT + "webauthn/login";
 
     public static void initAuthun(Vertx vertx, AuthenticatorRepository repo, Router router) {
         var authenticatorAttachment = AuthenticatorAttachment.of(Configuration.AUTH_ATTACHMENT.get());
