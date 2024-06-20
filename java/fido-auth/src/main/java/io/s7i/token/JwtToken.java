@@ -54,7 +54,7 @@ public class JwtToken {
         log.info("claims: {}", claims);
 
         var now = Instant.now();
-        var to = now.plus(24, ChronoUnit.HOURS);
+        var to = now.plus(Integer.parseInt(Configuration.JWT_TTL_HOURS.get()), ChronoUnit.HOURS);
 
         var bu = JWT.create()
                 .withIssuer(Configuration.APP_NAME.get())

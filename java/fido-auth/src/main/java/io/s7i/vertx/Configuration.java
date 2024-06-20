@@ -16,7 +16,8 @@ public enum Configuration {
     REPO_TYPE, ROCKSDB_PATH, MONGODB_URI,
     JWT_CERTSTORE_PATH,
     JWT_CERTSTORE_SECRET,
-    JWT_CERT_ALIAS;
+    JWT_CERT_ALIAS,
+    JWT_TTL_HOURS;
 
     public String get() {
         final var self = this;
@@ -49,6 +50,8 @@ public enum Configuration {
                 return AuthServer.PORT;
             case CONTEXT_ROOT:
                 return "/";
+            case JWT_TTL_HOURS:
+                return "24";
             default:
                 return null;
         }

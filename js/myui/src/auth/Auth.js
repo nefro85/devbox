@@ -7,12 +7,6 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 
-const webAuthn = new WebAuthn({
-    callbackPath: '/webauthn/callback',
-    registerPath: '/webauthn/register',
-    loginPath: '/webauthn/login'
-});
-
 class AuthForm extends React.Component {
 
     constructor(props) {
@@ -23,10 +17,16 @@ class AuthForm extends React.Component {
         this.handleChangeEmail = this.handleChangeEmail.bind(this);
         this.handleChangeUserName = this.handleChangeUserName.bind(this)
         this.handleLogin = this.handleLogin.bind(this);
+
+        this.webAuthn = new WebAuthn({
+            callbackPath: "./webauthn/callback",
+            registerPath: "./webauthn/register",
+            loginPath: "./webauthn/login"
+        });
     }
 
     handleRegister() {
-        webAuthn.register({
+        this.webAuthn.register({
             name: this.state.email,
             displayName: this.state.userName
         }).then(() => {
@@ -37,7 +37,7 @@ class AuthForm extends React.Component {
     }
 
     handleLogin() {
-        webAuthn.login({
+        this.webAuthn.login({
             name: this.state.email
         }).then(() => {
             console.log('logged in');

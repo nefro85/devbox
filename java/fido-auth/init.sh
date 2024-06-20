@@ -4,7 +4,7 @@
 export IP="192.168.0.19"
 export CERTSTORE_SECRET="ch@nge1t"
 #export PATH=${PATH}:$(cygpath 'C:\develop\tools\apache-maven-3.8.6\bin')
-export CERT_PATH=$(pwd)'/certstore.jks'
+export CERT_PATH=$(pwd)'/labstore.jks'
 export USE_SSL=true
 export SHOW_ACTIVITY=true
 

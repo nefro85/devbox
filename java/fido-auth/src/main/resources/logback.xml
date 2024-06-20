@@ -1,6 +1,8 @@
 <configuration>
 
-  <logger name="io.netty" level="WARN"/>
+  <property scope="context" name="NETTY_LOG" value="${NETTY_LOG:-WARN}"/>
+
+  <logger name="io.netty" level="${NETTY_LOG}"/>
   <logger name="org.mongodb" level="INFO"/>
 
 

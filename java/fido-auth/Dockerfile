@@ -4,17 +4,22 @@ FROM eclipse-temurin:11
 WORKDIR /opt/fido2
 
 COPY misc/hello.html web/index.html
-COPY certstore.jks certstore.jks
-COPY target/fido-auth-1.0.0-SNAPSHOT.jar fido.jar
+COPY labstore.jks sslcertstore.jks
+COPY certstore.jks jwtcertstore.jks
+COPY target/fido-auth.jar fido.jar
 
 ENV APP_NAME="Web Auth Service" \
     APP_FLAGS="dev" \
     AUTH_ATTACHMENT="CROSS_PLATFORM" \
-    CERTSTORE_SECRET="ch@nge1t" \
-    CERT_PATH="certstore.jks" \
+    CERTSTORE_SECRET="test123" \
+    CERT_PATH="sslcertstore.jks" \
+    JWT_CERTSTORE_PATH="jwtcertstore.jks" \
+    JWT_CERTSTORE_SECRET="ch@nge1t" \
+    JWT_CERT_ALIAS="rsakey" \
+    JWT_TTL_HOURS="24"\
     USE_SSL="true" \
     SHOW_ACTIVITY="true" \
-    ORIGIN="https://localhost:8443" \
+    ORIGIN="https://lab.mariodoit.pl" \
     MONGODB_URI="mongodb://root:example@mongo:27017/" \
     REPO_TYPE="rocksdb" \
     ROCKSDB_PATH="./authu-rocksdb" \
