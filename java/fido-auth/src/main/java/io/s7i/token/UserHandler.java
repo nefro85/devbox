@@ -18,6 +18,7 @@ public class UserHandler {
     public static final String LOGOUT = ROOT + "user/logout";
     public static final String STATUS = ROOT + "user/status";
     public static final String TOKEN = ROOT + "user/token";
+    public static final String CHECK = ROOT + "user/check/*";
 
     public static Router init(Router router, AsyncOp asyncOp, UserTokenGenerator generator) {
 
@@ -39,6 +40,20 @@ public class UserHandler {
                     return Future.succeededFuture(new JsonObject()
                             .put("authOk", principal.isPresent())
                             .put("principal", principal.orElse(new JsonObject())));
+
+                });
+
+        router.route(CHECK)
+                .produces(MimeMapping.getMimeTypeForExtension("text"))
+                .respond(ctx -> {
+                    var principal = Optional.ofNullable(ctx.user())
+                            .map(User::principal);
+                    var statusCode = principal.map(p -> 200).orElse(401);
+                    ctx.response().setStatusCode(statusCode);
+
+                    log.debug("response code {} for {}", statusCode, ctx.request().absoluteURI());
+
+                    return Future.succeededFuture("Status Code: " + statusCode);
 
                 });
 
