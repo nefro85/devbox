@@ -1,0 +1,11 @@
+.vscode/
+.metals/
+#local-scripts
+**/local-*.sh
+
+
+*.pat
+*.tar
+build/
+.gradle/
+.idea/
