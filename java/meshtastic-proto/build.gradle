@@ -9,6 +9,9 @@ plugins {
 group = "io.github.s7i.meshtastic.proto"
 version = "1.0"
 
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
 ext {
     grcpVersion= '1.51.0'
 }
