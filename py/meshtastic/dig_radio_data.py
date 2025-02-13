@@ -1,46 +1,46 @@
+#!/usr/bin/env python3
+
+import argparse
 import sys
 import time
 import logging
 import base64
-import datetime
 
 from pubsub import pub
 from kafka import KafkaProducer
 
-
 import meshtastic
 import meshtastic.serial_interface
 
-
 class MeshHandler():
-    def __init__(self, useKafka:bool = None, topicMesh="meshtastic-from-radio"):
+    def __init__(self, useKafka:bool = None, bootstrap_servers:str = None, topicMesh:str="meshtastic-from-radio", verbose:bool=False):
         
         self.useKafka = useKafka
         self.topicName = topicMesh
         self.device_id = None
+        self.verbose = verbose
 
         if useKafka:
-            self.producer = KafkaProducer(bootstrap_servers='lab.syg:9092')
+            self.producer = KafkaProducer(bootstrap_servers=bootstrap_servers)
+    
+    def _publishToKafka(self, binary_data:bytes) -> None:
+        if self.useKafka:
+            key = None 
+            if self.device_id:
+                key = self.device_id.encode()
+            self.producer.send(self.topicName, key=key, value=binary_data)
 
     def onReceive(self, packet, interface, topic=pub.AUTO_TOPIC):  # pylint: disable=unused-argument
-        """called when a packet arrives"""
-        print("==============")
-        stamp = datetime.datetime.now().astimezone().isoformat()
+        bin: bytes = packet['raw'].SerializeToString()
         
-        keys_list = list(packet.keys())
-        for key in keys_list:
-            if key == 'raw':
-                bin: bytes = packet['raw'].SerializeToString()
-                
-                if self.useKafka:
-                    self.producer.send(self.topicName, bin)
-                
-                print(f"[BASE64]{stamp},{base64.b64encode(bin).decode('utf-8')}")
-                # hex = packet['raw'].SerializeToString().hex()
-                # print(f"[HEX]: {hex}")
-            logging.info(f"{key} : {type(packet[key])} => {packet[key]}")
-        
-        #print(f"Received: {hex}")
+        if self.verbose:
+            keys_list = list(packet.keys())
+            for key in keys_list:
+                if key == 'raw':
+                    logging.info(f"[BASE64]{base64.b64encode(bin).decode('utf-8')}")
+                logging.info(f"{key} : {type(packet[key])} => {packet[key]}")
+
+        self._publishToKafka(bin)
 
 
     def onConnection(self, interface, topic=pub.AUTO_TOPIC):  # pylint: disable=unused-argument
@@ -51,9 +51,21 @@ class MeshHandler():
 
 
 def main():
-    logging.basicConfig(level=logging.WARN)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-k", "--kafka-broker", help="Kafka Broker (bootstrap.servers).")
+    parser.add_argument("-v", "--verbose", help="more verbose.", action="store_true")
 
-    meshHandler = MeshHandler(useKafka=True)
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.WARN)
+
+    if args.kafka_broker:
+        meshHandler = MeshHandler(useKafka=True, bootstrap_servers=args.kafka_broker, verbose=args.verbose)
+    else:
+      meshHandler = MeshHandler()
 
     pub.subscribe(meshHandler.onReceive, "meshtastic.receive")
     pub.subscribe(meshHandler.onConnection, "meshtastic.connection.established")
