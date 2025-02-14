@@ -11,6 +11,7 @@ from kafka import KafkaProducer
 
 import meshtastic
 import meshtastic.serial_interface
+import meshtastic.tcp_interface
 
 class MeshHandler():
     def __init__(self, useKafka:bool = None, bootstrap_servers:str = None, topicMesh:str="meshtastic-from-radio", verbose:bool=False):
@@ -53,7 +54,9 @@ class MeshHandler():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-k", "--kafka-broker", help="Kafka Broker (bootstrap.servers).")
+    #parser.add_argument("--topic", help="Kafka Topic for Mesh Packages in proto.")
     parser.add_argument("-v", "--verbose", help="more verbose.", action="store_true")
+    parser.add_argument("--host", help="Meshtastic radio.")
 
     args = parser.parse_args()
 
@@ -71,7 +74,12 @@ def main():
     pub.subscribe(meshHandler.onConnection, "meshtastic.connection.established")
 
     try:
-        iface = meshtastic.serial_interface.SerialInterface()
+        iface = None
+
+        if args.host:
+            iface = meshtastic.tcp_interface.TCPInterface(args.host)
+        else:            
+            iface = meshtastic.serial_interface.SerialInterface()
 
         if iface.nodes:
             for n in iface.nodes.values():
