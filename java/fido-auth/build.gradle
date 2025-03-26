@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'io.freefair.lombok' version '6.2.0'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    def vertxVersion = "4.4.5"
+    implementation "io.vertx:vertx-core:${vertxVersion}"
+    implementation "io.vertx:vertx-web:${vertxVersion}"
+    implementation "io.vertx:vertx-auth-webauthn:${vertxVersion}"
+    implementation 'com.auth0:java-jwt:4.4.0'
+    implementation 'org.mongodb:mongodb-driver-sync:4.11.0'
+    implementation 'io.github.s7i:rocksdb:0.1.2-SNAPSHOT'
+    implementation 'org.slf4j:slf4j-api:2.0.5'
+    implementation 'ch.qos.logback:logback-classic:1.4.12'
+}
+
+application {
+    mainClass = "io.s7i.webauthn.Main"
+}
+
