@@ -5,7 +5,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import io.s7i.vertx.Configuration;
-import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -17,47 +16,45 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 @Slf4j
-@UtilityClass
 public class JwtToken {
-    private static Algorithm algorithm;
+    private final Algorithm algorithm;
 
-    static {
+    public JwtToken() {
         try {
-            File path = new File(Configuration.CERT_PATH.get());
-            char[] secret = Configuration.CERTSTORE_SECRET.get().toCharArray();
+            File path = new File(Configuration.JWT_CERTSTORE_PATH.get());
+            char[] secret = Configuration.JWT_CERTSTORE_SECRET.get().toCharArray();
 
             var jks = KeyStore.getInstance(path, secret);
-            String alias = "rsakey";
+            var alias = Configuration.JWT_CERT_ALIAS.get();
             var key = jks.getKey(alias, secret);
 
             if (key instanceof RSAPrivateKey) {
                 var rsaPrivateKey = (RSAPrivateKey) key;
                 var rsaPublicKey = (RSAPublicKey) jks.getCertificate(alias).getPublicKey();
 
-
                 algorithm = Algorithm.RSA256(rsaPublicKey, rsaPrivateKey);
-
+                log.info("JWT Algorithm: {}", algorithm.getName());
             } else {
-                throw new IllegalStateException("No RSA Key");
+                throw new IllegalStateException("[JWT] No RSA Key");
             }
         } catch (Exception e) {
-            log.error("panic", e);
+            throw new IllegalStateException("[JWT] Cannot instantiate JwtToken functionality", e);
         }
     }
 
-    public static String build() {
+    public String build() {
         return build(Map.of());
     }
 
-    public static String build(Map<String, String> opts) {
+    public String build(Map<String, String> opts) {
         return jwt(opts).sign(algorithm);
     }
 
-    private static JWTCreator.Builder jwt(Map<String, String> claims) {
+    protected JWTCreator.Builder jwt(Map<String, String> claims) {
         log.info("claims: {}", claims);
 
         var now = Instant.now();
-        var to = now.plus(24, ChronoUnit.HOURS);
+        var to = now.plus(Integer.parseInt(Configuration.JWT_TTL_HOURS.get()), ChronoUnit.HOURS);
 
         var bu = JWT.create()
                 .withIssuer(Configuration.APP_NAME.get())
@@ -68,6 +65,6 @@ public class JwtToken {
     }
 
     public static void main(String[] args) {
-        System.out.println(JwtToken.build());
+        System.out.println(new JwtToken().build());
     }
 }

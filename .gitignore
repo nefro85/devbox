@@ -7,7 +7,19 @@
 *.pat
 *.tar
 build
+# Ignore Gradle project-specific cache directory
 .gradle
+
+# Ignore Gradle build output directory
+build
+out/
 .idea
+logs/
+.project
+.classpath
+.settings/
+bin/
+target/
 
 java/meshtastic-proto/src/main/java/com/geeksville/mesh/
+node_modules/

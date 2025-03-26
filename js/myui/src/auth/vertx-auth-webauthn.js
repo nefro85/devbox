@@ -194,6 +194,10 @@
         }
         return res;
       })
+      .then(res => {
+        console.log( JSON.stringify(res));
+        return res;
+      })
       .then(res => navigator.credentials.get({publicKey: res}))
       .then(credential => {
         return fetch(self.callbackPath, {

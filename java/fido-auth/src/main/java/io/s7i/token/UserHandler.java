@@ -1,6 +1,7 @@
 package io.s7i.token;
 
 import io.s7i.vertx.AsyncOp;
+import io.s7i.vertx.Configuration;
 import io.vertx.core.Future;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.json.JsonObject;
@@ -8,26 +9,30 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Router;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
 public class UserHandler {
 
-    public static Router init(Router router, AsyncOp asyncOp) {
+    public static final String ROOT = Configuration.CONTEXT_ROOT.get();
+    public static final String LOGOUT = ROOT + "user/logout";
+    public static final String STATUS = ROOT + "user/status";
+    public static final String TOKEN = ROOT + "user/token";
+    public static final String CHECK = ROOT + "user/check/*";
 
-        router.get("/user/token")
+    public static Router init(Router router, AsyncOp asyncOp, UserTokenGenerator generator) {
+
+        router.get(TOKEN)
                 .produces(MimeMapping.getMimeTypeForExtension("json"))
                 .respond(ctx ->
                         Optional.ofNullable(ctx.user())
                                 .map(User::principal)
                                 .map(p -> p.getString("userName"))
                                 .map(usrName -> asyncOp.roles(usrName)
-                                        .compose(roles -> Future.succeededFuture(generate(usrName, roles)))
+                                        .compose(roles -> Future.succeededFuture(generator.generate(usrName, roles)))
                                 ).orElse(Future.succeededFuture(new JsonObject()))
                 );
-        router.get("/user/status")
+        router.get(STATUS)
                 .produces(MimeMapping.getMimeTypeForExtension("json"))
                 .respond(ctx -> {
                     var principal = Optional.ofNullable(ctx.user())
@@ -38,7 +43,21 @@ public class UserHandler {
 
                 });
 
-        router.route("/user/logout")
+        router.route(CHECK)
+                .produces(MimeMapping.getMimeTypeForExtension("text"))
+                .respond(ctx -> {
+                    var principal = Optional.ofNullable(ctx.user())
+                            .map(User::principal);
+                    var statusCode = principal.map(p -> 200).orElse(401);
+                    ctx.response().setStatusCode(statusCode);
+
+                    log.debug("response code {} for {}", statusCode, ctx.request().absoluteURI());
+
+                    return Future.succeededFuture("Status Code: " + statusCode);
+
+                });
+
+        router.route(LOGOUT)
                 .produces(MimeMapping.getMimeTypeForExtension("json"))
                 .respond(ctx -> {
                     ctx.session().destroy();
@@ -47,16 +66,4 @@ public class UserHandler {
 
         return router;
     }
-
-    private static JsonObject generate(String usrName, List<String> roles) {
-
-        var jsonObject = new JsonObject();
-        var claims = Map.of(
-                "userName", usrName,
-                "roles", String.join(",", roles)
-        );
-        jsonObject.put("token", JwtToken.build(claims));
-        return jsonObject;
-    }
-
 }
