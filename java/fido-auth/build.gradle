@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'io.freefair.lombok' version '6.2.0'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 repositories {
@@ -10,7 +11,9 @@ repositories {
 }
 
 dependencies {
-    def vertxVersion = "4.4.5"
+    def vertxVersion = "4.5.13"
+
+    implementation(platform("io.vertx:vertx-stack-depchain:${vertxVersion}"))
     implementation "io.vertx:vertx-core:${vertxVersion}"
     implementation "io.vertx:vertx-web:${vertxVersion}"
     implementation "io.vertx:vertx-auth-webauthn:${vertxVersion}"
@@ -25,3 +28,8 @@ application {
     mainClass = "io.s7i.webauthn.Main"
 }
 
+shadowJar {
+
+    // https://github.com/grpc/grpc-java/issues/5493#issuecomment-478500418
+    mergeServiceFiles()
+}

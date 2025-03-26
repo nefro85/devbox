@@ -6,8 +6,8 @@
 
 *.pat
 *.tar
-build/
-.gradle/
-.idea/
+build
+.gradle
+.idea
 
 java/meshtastic-proto/src/main/java/com/geeksville/mesh/

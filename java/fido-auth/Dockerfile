@@ -1,11 +1,10 @@
-FROM eclipse-temurin:11
+FROM eclipse-temurin:17
 
 
 WORKDIR /opt/fido2
 
 COPY misc/hello.html web/index.html
-COPY certstore.jks certstore.jks
-COPY target/fido-auth-1.0.0-SNAPSHOT.jar fido.jar
+COPY build/libs/fido-auth-all.jar fido.jar
 
 ENV APP_NAME="Web Auth Service" \
     APP_FLAGS="dev" \
