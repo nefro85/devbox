@@ -26,6 +26,7 @@ public class UserHandler {
     public static final String TOKEN = ROOT + "user/token";
     public static final String CHECK = ROOT + "user/check/*";
     public static final String ANY_OTHER = "/*";
+    public static final String COOKIE_NAME = "s7i-jwt";
 
     public static Router init(Router router, AsyncOp asyncOp) {
 
@@ -39,7 +40,7 @@ public class UserHandler {
                                       .compose(roles -> {
                                           var token = generate(usrName, roles);
                                           ctx.response().addCookie(Cookie
-                                                .cookie("s7i-jwt", token.jwt())
+                                                .cookie(COOKIE_NAME, token.jwt())
                                                 .setDomain(Configuration.JWT_COOKIE_DOMAIN.get())
                                                 .setPath("/")
                                                 .setMaxAge(Duration.ofHours(Integer.parseInt(Configuration.JWT_TTL_HOURS.get())).toSeconds()));

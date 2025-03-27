@@ -2,6 +2,7 @@ package io.s7i.webauthn;
 
 import io.s7i.vertx.AuthServer;
 import io.s7i.vertx.Configuration;
+import io.s7i.vertx.OutpostVerticle;
 import io.vertx.core.Vertx;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
@@ -18,7 +19,12 @@ public class Main {
             logConfiguration();
 
             var vertex = Vertx.vertx();
-            var verticle = new AuthServer();
+            var verticle = Arrays.stream(args)
+                  .findFirst()
+                  .map(kind -> switch (kind) {
+                      case "outpost" -> new OutpostVerticle();
+                      default -> new AuthServer();
+                  }).orElseThrow();
 
             var latch = new CountDownLatch(1);
             Runnable cleanup = () -> {
@@ -32,7 +38,7 @@ public class Main {
 
             vertex.deployVerticle(verticle, ar -> {
                 if (ar.succeeded()) {
-                    log.info("deployed");
+                    log.info("Deployed Verticle: {}", verticle);
                 } else {
                     log.error("deploy verticle problem", ar.cause());
                     System.exit(4);

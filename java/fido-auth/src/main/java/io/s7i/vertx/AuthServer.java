@@ -3,12 +3,8 @@ package io.s7i.vertx;
 import io.s7i.token.UserHandler;
 import io.s7i.webauthn.MongoRepository;
 import io.s7i.webauthn.RocksdbRepository;
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.SessionHandler;
@@ -18,11 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-public class AuthServer extends AbstractVerticle {
+public class AuthServer extends HttpServerVerticle {
 
-    public static final String HOST = "0.0.0.0";
-    public static final String PORT = "8443";
-    public static final String WEB_ROOT = Configuration.WEB_ROOT.get();
     protected AsyncOp repo;
 
     @Override
@@ -36,7 +29,7 @@ public class AuthServer extends AbstractVerticle {
         });
     }
 
-    Router initRouter() {
+    protected Router initRouter() {
         final Router router = Router.router(vertx);
         router.route(staticRoutePath()).handler(StaticHandler.create(WEB_ROOT).setCachingEnabled(false));
         router.post().handler(BodyHandler.create());
@@ -52,40 +45,5 @@ public class AuthServer extends AbstractVerticle {
         return Configuration.CONTEXT_ROOT.get() + "*";
     }
 
-    @Override
-    public void start(Promise<Void> start) throws Exception {
 
-        var options = new HttpServerOptions()
-              .setLogActivity(Boolean.parseBoolean(Configuration.SHOW_ACTIVITY.get()))
-              .setSsl(Boolean.parseBoolean(Configuration.USE_SSL.get()))
-              .setKeyStoreOptions(
-                    new JksOptions()
-                          .setPath(Configuration.CERT_PATH.get())
-                          .setPassword(Configuration.CERTSTORE_SECRET.get()));
-
-        vertx.createHttpServer(options)
-              .requestHandler(initRouter())
-              .listen(getServerPort(), getServerHost())
-              .onSuccess(v -> {
-                  log.info("Server Running");
-                  start.complete();
-              })
-              .onFailure(start::fail);
-    }
-
-    @Override
-    public void stop(Promise<Void> stopPromise) throws Exception {
-        log.info("Stop called.");
-        stopPromise.complete();
-    }
-
-    private int getServerPort() {
-        return Configuration.SERVER_PORT.find()
-              .map(Integer::parseInt)
-              .orElseThrow();
-    }
-
-    private String getServerHost() {
-        return Configuration.SERVER_HOST.get();
-    }
 }

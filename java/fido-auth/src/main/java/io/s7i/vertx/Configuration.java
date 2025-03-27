@@ -1,5 +1,6 @@
 package io.s7i.vertx;
 
+import io.s7i.webauthn.Utils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +19,8 @@ public enum Configuration {
     JWT_CERTSTORE_SECRET,
     JWT_CERT_ALIAS,
     JWT_TTL_HOURS,
-    JWT_COOKIE_DOMAIN;
+    JWT_COOKIE_DOMAIN,
+    REQUIRED_ROLES;
 
     public String get() {
         final var self = this;
@@ -38,30 +40,20 @@ public enum Configuration {
     }
 
     String defaults() {
-        switch (this) {
-            case WEBAUTHN_CALLBACK:
-                return AuthnHelper.WEBAUTHN_CALLBACK;
-            case WEBAUTHN_REGISTER:
-                return AuthnHelper.WEBAUTHN_REGISTER;
-            case WEBAUTHN_LOGIN:
-                return AuthnHelper.WEBAUTHN_LOGIN;
-            case SERVER_HOST:
-                return AuthServer.HOST;
-            case SERVER_PORT:
-                return AuthServer.PORT;
-            case CONTEXT_ROOT:
-                return "/";
-            case JWT_TTL_HOURS:
-                return "24";
-            default:
-                return null;
-        }
+        return switch (this) {
+            case WEBAUTHN_CALLBACK -> AuthnHelper.WEBAUTHN_CALLBACK;
+            case WEBAUTHN_REGISTER -> AuthnHelper.WEBAUTHN_REGISTER;
+            case WEBAUTHN_LOGIN -> AuthnHelper.WEBAUTHN_LOGIN;
+            case SERVER_HOST -> AuthServer.HOST;
+            case SERVER_PORT -> AuthServer.PORT;
+            case CONTEXT_ROOT -> "/";
+            case JWT_TTL_HOURS -> "24";
+            default -> null;
+        };
     }
 
     public List<String> list() {
-        return Arrays.stream(this.get().split(","))
-                .filter(String::isEmpty)
-                .collect(Collectors.toList());
+        return Utils.asList(this.get());
     }
 
     public static boolean devMode() {

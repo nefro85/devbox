@@ -4,5 +4,9 @@ PROJECT_NAME=$(grep "rootProject.name" settings.gradle | sed -E "s/rootProject.n
 
 ./gradlew shadowJar --console=plain
 
-docker build -t s7i/${PROJECT_NAME} .
+docker build -t "${REMOTE}s7i/${PROJECT_NAME}" .
+
+if [[ -n "${REMOTE}" ]]; then
+  docker push "${REMOTE}s7i/${PROJECT_NAME}"
+fi
 

@@ -18,14 +18,12 @@ public abstract class UserTokenGenerator {
         }
     }
 
-    private static final JwtToken jwtToken = new JwtToken();
-
     public static Token generate(String usrName, List<String> roles) {
 
         var claims = Map.of(
               "userName", usrName,
               "roles", String.join(",", roles)
         );
-        return new Token(jwtToken.build(claims));
+        return new Token(JwtToken.getInstance().build(claims));
     }
 }
