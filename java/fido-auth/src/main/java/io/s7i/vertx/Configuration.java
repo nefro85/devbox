@@ -17,7 +17,8 @@ public enum Configuration {
     JWT_CERTSTORE_PATH,
     JWT_CERTSTORE_SECRET,
     JWT_CERT_ALIAS,
-    JWT_TTL_HOURS;
+    JWT_TTL_HOURS,
+    JWT_COOKIE_DOMAIN;
 
     public String get() {
         final var self = this;

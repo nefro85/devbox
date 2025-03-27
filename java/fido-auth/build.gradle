@@ -29,7 +29,6 @@ application {
 }
 
 shadowJar {
-
     // https://github.com/grpc/grpc-java/issues/5493#issuecomment-478500418
     mergeServiceFiles()
 }

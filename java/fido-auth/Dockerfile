@@ -24,7 +24,9 @@ ENV APP_NAME="Web Auth Service" \
     JVM_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" \
     WEB_ROOT="web"
 
-CMD ["sh", "-c", "java ${JVM_OPTS} -jar fido.jar"]
+
+ENTRYPOINT ["bash", "-c", "exec java \"${JVM_OPTS}\" -jar fido.jar \"$@\"", "--"]
+CMD ["my", "args"]
 
 EXPOSE 8443
 EXPOSE 5005

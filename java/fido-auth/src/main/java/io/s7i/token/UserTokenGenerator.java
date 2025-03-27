@@ -4,19 +4,28 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-public class UserTokenGenerator {
+public abstract class UserTokenGenerator {
 
-    final JwtToken jwtToken = new JwtToken();
+    public record Token(String jwt) {
 
-    public JsonObject generate(String usrName, List<String> roles) {
+        public JsonObject asJson() {
+            var jsonObject = new JsonObject();
+            jsonObject.put("id", UUID.randomUUID().toString());
+            jsonObject.put("token", jwt);
+            return jsonObject;
+        }
+    }
 
-        var jsonObject = new JsonObject();
+    private static final JwtToken jwtToken = new JwtToken();
+
+    public static Token generate(String usrName, List<String> roles) {
+
         var claims = Map.of(
-                "userName", usrName,
-                "roles", String.join(",", roles)
+              "userName", usrName,
+              "roles", String.join(",", roles)
         );
-        jsonObject.put("token", jwtToken.build(claims));
-        return jsonObject;
+        return new Token(jwtToken.build(claims));
     }
 }

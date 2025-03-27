@@ -28,8 +28,7 @@ public class JwtToken {
             var alias = Configuration.JWT_CERT_ALIAS.get();
             var key = jks.getKey(alias, secret);
 
-            if (key instanceof RSAPrivateKey) {
-                var rsaPrivateKey = (RSAPrivateKey) key;
+            if (key instanceof RSAPrivateKey rsaPrivateKey) {
                 var rsaPublicKey = (RSAPublicKey) jks.getCertificate(alias).getPublicKey();
 
                 algorithm = Algorithm.RSA256(rsaPublicKey, rsaPrivateKey);
@@ -51,7 +50,7 @@ public class JwtToken {
     }
 
     protected JWTCreator.Builder jwt(Map<String, String> claims) {
-        log.info("claims: {}", claims);
+        log.debug("claims: {}", claims);
 
         var now = Instant.now();
         var to = now.plus(Integer.parseInt(Configuration.JWT_TTL_HOURS.get()), ChronoUnit.HOURS);

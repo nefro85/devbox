@@ -1,9 +1,7 @@
 package io.s7i.vertx;
 
 import io.s7i.token.UserHandler;
-import io.s7i.token.UserTokenGenerator;
 import io.s7i.webauthn.MongoRepository;
-import io.s7i.webauthn.Repository;
 import io.s7i.webauthn.RocksdbRepository;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
@@ -18,27 +16,24 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Map;
-import java.util.function.Supplier;
 
 @Slf4j
 public class AuthServer extends AbstractVerticle {
+
     public static final String HOST = "0.0.0.0";
     public static final String PORT = "8443";
     public static final String WEB_ROOT = Configuration.WEB_ROOT.get();
     protected AsyncOp repo;
-    protected final UserTokenGenerator userTokenGenerator = new UserTokenGenerator();
 
     @Override
     public void init(Vertx vertx, Context context) {
         super.init(vertx, context);
 
-        var repoFactory = Map.<String, Supplier<Repository>>of(
-                "mongodb", MongoRepository::new,
-                "rocksdb", RocksdbRepository::new
-        ).get(Configuration.REPO_TYPE.get());
-
-        repo = new AsyncOp(vertx, repoFactory.get());
+        repo = new AsyncOp(vertx, switch (Configuration.REPO_TYPE.get()) {
+            case "mongodb" -> new MongoRepository();
+            case "rocksdb" -> new RocksdbRepository();
+            default -> throw new IllegalStateException("invalid repo kind");
+        });
     }
 
     Router initRouter() {
@@ -47,7 +42,7 @@ public class AuthServer extends AbstractVerticle {
         router.post().handler(BodyHandler.create());
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
-        UserHandler.init(router, repo, userTokenGenerator);
+        UserHandler.init(router, repo);
         AuthnHelper.initAuthun(vertx, repo, router);
 
         return router;
@@ -61,32 +56,33 @@ public class AuthServer extends AbstractVerticle {
     public void start(Promise<Void> start) throws Exception {
 
         var options = new HttpServerOptions()
-                .setLogActivity(Boolean.parseBoolean(Configuration.SHOW_ACTIVITY.get()))
-                .setSsl(Boolean.parseBoolean(Configuration.USE_SSL.get()))
-                .setKeyStoreOptions(
-                        new JksOptions()
-                                .setPath(Configuration.CERT_PATH.get())
-                                .setPassword(Configuration.CERTSTORE_SECRET.get()));
+              .setLogActivity(Boolean.parseBoolean(Configuration.SHOW_ACTIVITY.get()))
+              .setSsl(Boolean.parseBoolean(Configuration.USE_SSL.get()))
+              .setKeyStoreOptions(
+                    new JksOptions()
+                          .setPath(Configuration.CERT_PATH.get())
+                          .setPassword(Configuration.CERTSTORE_SECRET.get()));
 
         vertx.createHttpServer(options)
-                .requestHandler(initRouter())
-                .listen(getServerPort(), getServerHost())
-                .onSuccess(v -> {
-                    log.info("Server Running");
-                    start.complete();
-                })
-                .onFailure(start::fail);
+              .requestHandler(initRouter())
+              .listen(getServerPort(), getServerHost())
+              .onSuccess(v -> {
+                  log.info("Server Running");
+                  start.complete();
+              })
+              .onFailure(start::fail);
     }
 
     @Override
     public void stop(Promise<Void> stopPromise) throws Exception {
         log.info("Stop called.");
+        stopPromise.complete();
     }
 
     private int getServerPort() {
         return Configuration.SERVER_PORT.find()
-                .map(Integer::parseInt)
-                .orElseThrow();
+              .map(Integer::parseInt)
+              .orElseThrow();
     }
 
     private String getServerHost() {

@@ -1,0 +1,8 @@
+services:
+  node:
+    image: s7i/nodedev:cicd
+    working_dir: /opt/myui
+    command: npm install; npm run build
+    volumes:
+      - ./myui:/opt/myui:rw
+

@@ -23,7 +23,7 @@ export default function User() {
                     console.trace(error);
                 }
             );
-    });
+    }, []);
 
     function handleLogin() {
         setAuthOk({ "authOk": true });
@@ -41,7 +41,7 @@ export default function User() {
             .then(res => res.json())
             .then(res => {
                 let up = [...tokenList, {
-                    id: ++tokenList.length,
+                    id: res.id,
                     token: res.token
                 }];
                 updateTokenList(up);
