@@ -14,7 +14,7 @@ import meshtastic.serial_interface
 import meshtastic.tcp_interface
 
 class MeshHandler():
-    def __init__(self, useKafka:bool = None, bootstrap_servers:str = None, topicMesh:str="meshtastic-from-radio", verbose:bool=False):
+    def __init__(self, useKafka:bool = None, bootstrap_servers:str = None, topicMesh:str="meshtastic-package", verbose:bool=False):
         
         self.useKafka = useKafka
         self.topicName = topicMesh
@@ -23,6 +23,14 @@ class MeshHandler():
 
         if useKafka:
             self.producer = KafkaProducer(bootstrap_servers=bootstrap_servers)
+
+    # @property
+    # def topic(self):
+    #     return self.topicName
+
+    # @topic.setter
+    def topic(self, name):
+        self.topicName = name
     
     def _publishToKafka(self, binary_data:bytes) -> None:
         if self.useKafka:
@@ -54,7 +62,7 @@ class MeshHandler():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-k", "--kafka-broker", help="Kafka Broker (bootstrap.servers).")
-    #parser.add_argument("--topic", help="Kafka Topic for Mesh Packages in proto.")
+    parser.add_argument("--topic", help="Kafka Topic for Mesh Packages in proto.")
     parser.add_argument("-v", "--verbose", help="more verbose.", action="store_true")
     parser.add_argument("--host", help="Meshtastic radio.")
 
@@ -69,6 +77,10 @@ def main():
         meshHandler = MeshHandler(useKafka=True, bootstrap_servers=args.kafka_broker, verbose=args.verbose)
     else:
       meshHandler = MeshHandler()
+
+    if args.topic:
+        meshHandler.topic(args.topic)
+
 
     pub.subscribe(meshHandler.onReceive, "meshtastic.receive")
     pub.subscribe(meshHandler.onConnection, "meshtastic.connection.established")
