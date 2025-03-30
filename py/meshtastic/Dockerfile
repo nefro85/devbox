@@ -14,6 +14,6 @@ RUN set -ex; \
 
 COPY vxapi.py .
 ENV MESH_HOST="192.168.0.170"
-ENTRYPOINT [ "sh" , "-c", "fastapi run vxapi.py --host 0.0.0.0"]
+ENTRYPOINT [ "sh" , "-c", "fastapi run vxapi.py --host 0.0.0.0 \"$@\"", "--"]
 #CMD ["--root-path /vx"]
 EXPOSE 8000

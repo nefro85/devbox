@@ -23,3 +23,6 @@ target/
 
 java/meshtastic-proto/src/main/java/com/geeksville/mesh/
 node_modules/
+
+
+__pycache__
