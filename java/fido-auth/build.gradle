@@ -22,6 +22,10 @@ dependencies {
     implementation 'io.github.s7i:rocksdb:0.1.2-SNAPSHOT'
     implementation 'org.slf4j:slf4j-api:2.0.5'
     implementation 'ch.qos.logback:logback-classic:1.4.12'
+    implementation 'org.rocksdb:rocksdbjni:7.6.0'
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 
 application {
@@ -31,4 +35,11 @@ application {
 shadowJar {
     // https://github.com/grpc/grpc-java/issues/5493#issuecomment-478500418
     mergeServiceFiles()
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }

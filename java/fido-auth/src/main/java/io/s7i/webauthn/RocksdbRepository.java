@@ -3,10 +3,15 @@ package io.s7i.webauthn;
 import io.github.s7i.doer.domain.rocksdb.RocksDb;
 import io.s7i.vertx.Configuration;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.webauthn.Authenticator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -28,41 +33,46 @@ public class RocksdbRepository implements Repository {
     @Override
     public List<Authenticator> fetcher(Authenticator query) {
         var userName = query.getUserName();
-        var list = new ArrayList<Authenticator>();
-        rocksDb.getAsString(CF_AUTHUN, userName).ifPresent(value -> {
-            log.debug("getting from db: {}", value);
-            var arr = new JsonArray(value);
-
-            for (int i = 0; i < arr.size(); i++) {
-                list.add(new Authenticator(arr.getJsonObject(i)));
-            }
-        });
-        return Collections.unmodifiableList(list);
+        return rocksDb.getAsString(CF_AUTHUN, userName)
+              .map(value -> {
+                  log.debug("getting from db: {}", value);
+                  return fromJsonArray(new JsonArray(value)).toList();
+              })
+              .orElse(Collections.emptyList());
     }
 
     @Override
     public Void updater(Authenticator authenticator) {
         var userName = authenticator.getUserName();
 
-        var list = new ArrayList<Authenticator>();
+        var update = new AtomicInteger();
 
-        var value = rocksDb.getAsString(CF_AUTHUN, userName);
-        if (value.isPresent()) {
-            var json = value.get();
-            log.debug("getting from db: {}", json);
-            var arr = new JsonArray(json);
-            for (int i = 0; i < arr.size(); i++) {
-                list.add(new Authenticator(arr.getJsonObject(i)));
-            }
-            var update = list.stream()
-                  .filter(a -> a.getCredID().equals(authenticator.getCredID()))
-                  .map(e -> e.setCounter(e.getCounter() + 1))
-                  .count();
+        var list = rocksDb.getAsString(CF_AUTHUN, userName)
+              .map(value -> {
+                  log.debug("User {}, Authenticators: {}", userName, authenticator);
+                  return fromJsonArray(new JsonArray(value));
+              })
+              .stream()
+              .flatMap(Function.identity())
+              .map(stored -> {
+                  if (stored.getCredID().equals(authenticator.getCredID())) {
+                      stored.setCounter(stored.getCounter() + 1);
 
-            log.debug("updates of records: {}", update);
-        } else {
+                      log.debug("Updating Authenticator: {}", stored);
+
+                      update.incrementAndGet();
+                  }
+                  return stored;
+              }).toList();
+
+        if (update.get() == 0) {
+            list = new ArrayList<>(list);
+
+            log.debug("No Authenticator updates, adding new: {}", authenticator);
+
             list.add(authenticator);
         }
+
         var arr = new JsonArray();
         for (var e : list) {
             arr.add(e.toJson());
@@ -74,7 +84,6 @@ public class RocksdbRepository implements Repository {
         return null;
     }
 
-    @Override
     public List<String> getUserRoles(String user) {
         return rocksDb.getAsString(USER_ROLE, user).map(stored -> {
             var arr = new JsonArray(stored);
@@ -84,5 +93,11 @@ public class RocksdbRepository implements Repository {
             }
             return list;
         }).orElse(Collections.emptyList());
+    }
+
+    private static Stream<Authenticator> fromJsonArray(JsonArray array) {
+        return StreamSupport.stream(array.spliterator(), false)
+              .map(JsonObject.class::cast)
+              .map(Authenticator::new);
     }
 }
