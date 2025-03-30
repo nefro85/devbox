@@ -12,7 +12,9 @@ cd $BOX/js
 docker compose up
 
 cd $BOX/js/myui
-docker build -t "${REMOTE}s7i/fido-web" .
+docker build \
+  -t "${REMOTE}s7i/fido-web" \
+  --build-arg AUTH_IMAGE="${REMOTE}s7i/fido-auth:latest" .
 docker push "${REMOTE}s7i/fido-web"
 
 cd $BOX
