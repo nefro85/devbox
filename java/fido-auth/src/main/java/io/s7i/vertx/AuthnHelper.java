@@ -1,5 +1,6 @@
 package io.s7i.vertx;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.s7i.webauthn.AuthenticatorRepository;
 import io.vertx.core.Vertx;
 import io.vertx.ext.auth.webauthn.*;
@@ -12,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 @Slf4j
 public class AuthnHelper {
-
 
     public static final String ROOT = Configuration.CONTEXT_ROOT.get();
     public static final String WEBAUTHN_CALLBACK = ROOT + "webauthn/callback";
@@ -55,6 +55,15 @@ public class AuthnHelper {
         webAuthnHandler.setupCredentialsCreateCallback(registerRoute);
         webAuthnHandler.setupCredentialsGetCallback(router.post(Configuration.WEBAUTHN_LOGIN.get()));
 
-        router.route().handler(webAuthnHandler);
+        router.route()
+              .handler(webAuthnHandler)
+              .failureHandler(event -> event.response()
+                    .setStatusCode(HttpResponseStatus.FORBIDDEN.code())
+                    .end());
+
+        router.errorHandler(500, event -> {
+            log.debug("Handling 500 of {}", event);
+            event.response().setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).end();
+        });
     }
 }

@@ -31,7 +31,8 @@ public class AuthServer extends HttpServerVerticle {
 
     protected Router initRouter() {
         final Router router = Router.router(vertx);
-        router.route(staticRoutePath()).handler(StaticHandler.create(WEB_ROOT).setCachingEnabled(false));
+        router.route(staticRoutePath()).handler(StaticHandler.create(WEB_ROOT)
+              .setCachingEnabled(staticCacheEnabled()));
         router.post().handler(BodyHandler.create());
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
@@ -39,6 +40,10 @@ public class AuthServer extends HttpServerVerticle {
         AuthnHelper.initAuthun(vertx, repo, router);
 
         return router;
+    }
+
+    private boolean staticCacheEnabled() {
+        return !Configuration.APP_FLAGS.list().contains("no-cache");
     }
 
     private String staticRoutePath() {

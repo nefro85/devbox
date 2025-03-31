@@ -32,6 +32,12 @@ public class RocksdbRepository implements Repository {
 
     @Override
     public List<Authenticator> fetcher(Authenticator query) {
+        log.debug("Fetching, userName: {}, credId: {}", query.getUserName(), query.getCredID());
+
+        if (query.getCredID() != null) {
+            throw new UnsupportedOperationException("not yet implemented: query for Cred ID");
+        }
+
         var userName = query.getUserName();
         return rocksDb.getAsString(CF_AUTHUN, userName)
               .map(value -> {
@@ -45,6 +51,10 @@ public class RocksdbRepository implements Repository {
     public Void updater(Authenticator authenticator) {
         var userName = authenticator.getUserName();
 
+        if (userName == null || userName.isBlank()) {
+            throw new RuntimeException();
+        }
+
         var update = new AtomicInteger();
 
         var list = rocksDb.getAsString(CF_AUTHUN, userName)
@@ -56,7 +66,7 @@ public class RocksdbRepository implements Repository {
               .flatMap(Function.identity())
               .map(stored -> {
                   if (stored.getCredID().equals(authenticator.getCredID())) {
-                      stored.setCounter(stored.getCounter() + 1);
+                      stored.setCounter(authenticator.getCounter());
 
                       log.debug("Updating Authenticator: {}", stored);
 
@@ -65,21 +75,27 @@ public class RocksdbRepository implements Repository {
                   return stored;
               }).toList();
 
-        if (update.get() == 0) {
-            list = new ArrayList<>(list);
-
+        if (list.isEmpty()) {
             log.debug("No Authenticator updates, adding new: {}", authenticator);
 
-            list.add(authenticator);
+            list = List.of(authenticator);
+            update.incrementAndGet();
+
+        } else if (update.get() == 0) {
+            log.warn("Not existing authenticator for user {}", authenticator);
+            throw new CannotAddAlreadyExistsException("Authenticator for user " + userName);
         }
 
-        var arr = new JsonArray();
-        for (var e : list) {
-            arr.add(e.toJson());
+        if (update.get() > 0) {
+
+            var arr = new JsonArray();
+            for (var e : list) {
+                arr.add(e.toJson());
+            }
+            var result = arr.toBuffer().toString();
+            log.debug("putting: key: {}, value: {}", userName, result);
+            rocksDb.put(CF_AUTHUN, userName, result);
         }
-        var result = arr.toBuffer().toString();
-        log.debug("putting: key: {}, value: {}", userName, result);
-        rocksDb.put(CF_AUTHUN, userName, result);
 
         return null;
     }
