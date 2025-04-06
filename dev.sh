@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-BOX=$(pwd)
+BOX=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 export REMOTE="dwarf.syg:5817/docker/"
 
 cd $BOX/java/fido-auth
@@ -8,14 +8,19 @@ cd $BOX/java/fido-auth
 
 #exit 0
 
-cd $BOX/js
-docker compose up
+if [[ "x${NO_JS}" != "x1" ]]; then
+  echo "running js build"
+  cd $BOX/js
+  docker compose up
+fi
 
 cd $BOX/js/myui
 docker build \
   -t "${REMOTE}s7i/fido-web" \
   --build-arg AUTH_IMAGE="${REMOTE}s7i/fido-auth:latest" .
-docker push "${REMOTE}s7i/fido-web"
+
+if [[ -n "${REMOTE}" ]]; then
+  docker push "${REMOTE}s7i/fido-web"
+fi
 
 cd $BOX
-
