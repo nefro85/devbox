@@ -29,7 +29,7 @@ pipeline {
         stage('Build') {
             agent { label 'docker' }
             steps {
-                sh "dev.sh"
+                sh "./dev.sh"
             }
         }
     }
