@@ -14,6 +14,16 @@ pipeline {
             description: 'Gradle Extra Options'
         )
         choice(
+            description: 'PG API',
+            choices: ['NO', 'YES'],
+            name: 'OPT_PG_API'
+        )
+        choice(
+            description: 'Common Build',
+            choices: ['NO', 'YES'],
+            name: 'OPT_COMMON'
+        )
+        choice(
             description: 'Build Docker Image',
             choices: ['NO', 'YES'],
             name: 'OPT_BUILD_DOCKER'
@@ -26,10 +36,28 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        stage('Common Build') {
+            when {
+                expression {
+                    return params.OPT_COMMON == "YES"
+                }
+            }
             agent { label 'docker' }
             steps {
                 sh "./dev.sh"
+            }
+        }
+        stage('PG Api Build') {
+            when {
+                expression {
+                    return params.OPT_PG_API == "YES"
+                }
+            }
+            //agent { label 'docker' }
+            steps {
+                dir ("./java/pg-api") {
+                    sh "./gradlew --no-daemon build"
+                }
             }
         }
     }
