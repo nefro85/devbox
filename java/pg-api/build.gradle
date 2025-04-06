@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'io.s7i'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    def vertxVersion = "4.5.13"
+
+    implementation(platform("io.vertx:vertx-stack-depchain:${vertxVersion}"))
+    implementation "io.vertx:vertx-core:${vertxVersion}"
+    implementation "io.vertx:vertx-web:${vertxVersion}"
+    implementation "io.vertx:vertx-pg-client:${vertxVersion}"
+    implementation "io.vertx:vertx-sql-client-templates:${vertxVersion}"
+    implementation "org.postgresql:postgresql:42.7.5"
+    implementation "com.ongres.scram:client:2.1"
+
+    implementation 'org.slf4j:slf4j-api:2.0.5'
+    implementation 'ch.qos.logback:logback-classic:1.4.12'
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+application {
+    mainClass = "s7i.Main"
+}
+
+shadowJar {
+    // https://github.com/grpc/grpc-java/issues/5493#issuecomment-478500418
+    mergeServiceFiles()
+}
