@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# curl -s http://lab.syg:3002/mario/devbox/raw/branch/main/.dotfile.sh | bash -s
+
 figlet s7i dotfile | lolcat
 
 function get_ssl_cert() {
