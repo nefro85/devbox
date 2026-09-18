@@ -20,3 +20,21 @@ function add_user() {
     sudo useradd  --home-dir ${home} --uid=${id} --gid=${name} ${name}
 }
 
+add_user_2() {
+    local name="$1"
+    local id="$2"
+    local home="$3"
+
+    sudo groupadd --gid "$id" "$name"
+    sudo useradd \
+        --create-home \
+        --home-dir "$home" \
+        --uid "$id" \
+        --gid "$id" \
+        --shell /bin/bash \
+        "$name"
+
+    sudo usermod --add-subuids 100000-165535 "$name"
+    sudo usermod --add-subgids 100000-165535 "$name"
+    sudo loginctl enable-linger "$name"
+}
